@@ -1,0 +1,21 @@
+.swiper {
+
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+.swiper-slide {
+  background-position: center;
+  background-size: cover;
+  width: 300px;
+  
+}
+
+.swiper-slide img {
+  display: block;
+}
+/* Zoom effect for the middle card */
+.mySwiper .swiper-slide-active {
+  transform: scale(1.2); /* Adjust the scale value as needed for the desired zoom level */
+  transition: transform 0.8s ease; /* Add a smooth transition effect */
+}

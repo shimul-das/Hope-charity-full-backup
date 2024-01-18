@@ -1,0 +1,92 @@
+
+  const handleDonateButtonClick = async (e, data) => {
+    e.preventDefault();
+    console.log(data.selectedAmount)
+    if (!stripe || !elements) {
+      return; // Stripe or Elements not yet available
+    }
+
+    const cardElement = elements.getElement(CardElement);
+
+    if (!cardElement) {
+      console.error("Card element is null");
+      return;
+    }
+
+    const { error, paymentMethod } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardElement,
+    });
+
+    if (error) {
+      console.error(error);
+    } else {
+      const response = await fetch('http://localhost:5000/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount: data.selectedAmount }), // Use the amount from form data
+      });
+
+      const { clientSecret } = await response.json();
+
+      const { error } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: paymentMethod.id,
+      });
+
+      if (error) {
+        console.error(error);
+      } else {
+        const transactionId = paymentMethod.id; // Assuming Stripe provides a transaction ID
+        Swal.fire({
+          icon: 'success',
+          title: 'Payment Successful!',
+          text: `Transaction ID: ${transactionId}`,
+        });
+      }
+    }
+
+    ///Data Save
+let transactionId = ''; // Define transactionId here
+
+  // ... (Stripe payment confirmation block)
+  if (error) {
+    console.error(error);
+  } else {
+    const { paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: paymentMethod.id,
+    });
+    transactionId = paymentIntent.id; // Obtain transaction ID from paymentIntent
+    // Display success message
+    Swal.fire({
+      icon: 'success',
+      title: 'Payment Successful!',
+      text: `Transaction ID: ${transactionId}`,
+    });
+  }
+
+  // ... (rest of your code)
+
+  // Save donation data
+  try {
+    const response = await axios.post('http://localhost:5000/save-donation', {
+      selectedAmount: data.selectedAmount,
+      selectedCategory: data.selectedCategory,
+      email: data.email || user.email,
+      name: data.name || user.displayName,
+      message: data.message,
+      transactionId: transactionId, // Use transactionId obtained from Stripe
+      // Add other fields as needed
+    });
+    // ... (rest of your code)
+  } catch (error) {
+    console.error(error);
+    // Handle error while saving donation details
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'Failed to save donation details',
+    });
+  }
+  };

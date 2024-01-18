@@ -1,0 +1,232 @@
+// import React from 'react';
+// import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+// import "react-tabs/style/react-tabs.css";
+// import eventsImg01 from "../../../../assets/eventsImg01.png";
+// import eventsImg02 from "../../../../assets/eventsImg02.png";
+// import eventsImg03 from "../../../../assets/eventsImg03.png";
+
+// const Events = () => {
+//   return (
+//     <div className="my-container">
+//       <h1 className="text-center text-5xl font-extrabold tracking-[4px] mb-2">
+//         Fundraising
+//       </h1>
+//       <h1 className="text-center text-primary text-5xl font-extrabold tracking-[4px] mb-10">
+//         Events
+//       </h1>
+//       <p className="text-center text-gray-600 text-xl font-semibold tracking-wide">
+//         We host regular events to raise money for charity. This way anyone can
+//         feel included and do something good.
+//       </p>
+//       <section>
+//         <Tabs>
+//           <TabList className="flex flex-col md:flex-row justify-center font-semibold border-none items-center mt-5  cursor-pointer no-underline gap-7 text-xl uppercase">
+//             <Tab className="px-4 tracking-wide border-[1px] text-secondary font-bold rounded-t-md focus:outline-none">
+//               Current Events
+//             </Tab>
+//             <Tab className=" px-4 tracking-wide border-[1px] text-secondary font-bold rounded-t-md focus:outline-none">
+//               Upcoming Events
+//             </Tab>
+//           </TabList>
+
+//           <TabPanel>
+//             <div className="flex mt-10">
+//               <div className='mx-auto'>
+//                 <img className="w-full" src={eventsImg01} alt="events-img" />
+//                 <div className="mt-2 flex justify-center text-center">
+//                   <div>
+//                     <p className="text-xl font-bold tracking-wider mb-6">
+//                       Gaming Tournaments
+//                     </p>
+//                     <button className="py-1 px-4 text-sm bg-primary rounded-sm tracking-wider text-secondary font-extrabold hover:bg-primary hover:text-white hover:border-0 border-gray-500 transition duration-500 ease-in-out transform ">
+//                       Join Event
+//                     </button>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </TabPanel>
+//           <TabPanel>
+//             <div className="flex gap-8 mt-10 justify-center">
+//               <div>
+//                 <img src={eventsImg02} alt="events-img" />
+//                 <div className="mt-2 flex justify-center text-center">
+//                   <div>
+//                     <p className="text-xl font-bold tracking-wider mb-6">
+//                       Charity Concerts
+//                     </p>
+//                     <button className="py-1 px-4 text-sm bg-primary rounded-sm tracking-wider text-secondary font-extrabold hover:bg-primary hover:text-white hover:border-0 border-gray-500 transition duration-500 ease-in-out transform ">
+//                       Join Event
+//                     </button>
+//                   </div>
+//                 </div>
+//               </div>
+//               <div>
+//                 <img src={eventsImg03} alt="events-img" />
+//                 <div className="mt-2 flex justify-center text-center">
+//                   <div>
+//                     <p className="text-xl font-bold tracking-wider mb-6">
+//                       Pitha Festival
+//                     </p>
+//                     <button className="py-1 px-4 text-sm bg-primary rounded-sm tracking-wider text-secondary font-extrabold hover:bg-primary hover:text-white hover:border-0 border-gray-500 transition duration-500 ease-in-out transform ">
+//                       Join Event
+//                     </button>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </TabPanel>
+//         </Tabs>
+//       </section>
+//     </div>
+//   );
+// };
+
+// export default Events;
+
+import React, { useState, useEffect, useContext } from 'react';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
+import Swal from 'sweetalert2'; // Check if this import statement is correct
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios'; // Import Axios for making HTTP requests
+import { AuthContext } from '../../../../Providers/AuthProvider';
+
+
+const Events = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [events, setEvents] = useState([]);
+  const [currentEvents, setcurrentEvents] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const { user } = useContext(AuthContext);
+  useEffect(() => {
+    // Fetch event data from an API endpoint
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/events'); // Replace '/events' with your API endpoint
+        setEvents(response.data); // Assuming the response contains an array of event objects
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        // Handle errors, e.g., set an empty array or show an error message
+        setEvents([]);
+      }
+    };
+
+    fetchEvents(); // Call the fetchEvents function when the component mounts
+  }, []);
+
+  useEffect(() => {
+    // Filter events based on categories
+    const currentEvents = events.filter(event => event.status === 'Current');
+    const upcomingEvents = events.filter(event => event.status === 'Upcoming');
+
+    setcurrentEvents(currentEvents);
+    setUpcomingEvents(upcomingEvents);
+  }, [events]);
+
+  const handleJoinEvent = async (id) => {
+    console.log("This is clicked")
+    if (!user || !user.displayName || !user.email) {
+      Swal.fire('You need to login to join the event.', {
+        icon: 'error',
+      }).then(() => {
+        navigate('/login', { state: { from: location.pathname } });
+      });
+    } else {
+      // const updatedEvents = events.map((event) => {
+      //   if (event.name === eventName) {
+      //     const volunteers = event.volunteers || [];
+      //     const updatedEvent = {
+      //       ...event,
+      //       volunteers: [...volunteers, { name: user.displayName, email: user.email }],
+      //     };
+
+      //     axios.put(`http://localhost:5000/events/${event.id}`, updatedEvent)
+      //       .then((response) => {
+      //         setEvents((prevEvents) =>
+      //           prevEvents.map((prevEvent) =>
+      //             prevEvent.id === event.id ? response.data : prevEvent
+      //           )
+      //         );
+      //         swal.fire('You have successfully joined the event!', {
+      //           icon: 'success',
+      //         });
+      //       })
+      //       .catch((error) => {
+      //         console.error('Error joining event:', error);
+      //         swal('Error joining event. Please try again later.', {
+      //           icon: 'error',
+      //         });
+      //       });
+      //   }
+      //   return event;
+      // });
+      // setEvents(updatedEvents);
+      console.log("entered else porsion")
+    }
+  };
+
+  return (
+    <div className="my-container">
+      {/* ... (other content) ... */}
+      <section>
+        <Tabs>
+          <TabList className="flex flex-col md:flex-row justify-center font-semibold border-none items-center mt-5 cursor-pointer no-underline gap-7 text-xl uppercase">
+            <Tab className="px-4 tracking-wide border-[1px] text-secondary font-bold rounded-t-md focus:outline-none">
+              Current Events
+            </Tab>
+            <Tab className="px-4 tracking-wide border-[1px] text-secondary font-bold rounded-t-md focus:outline-none">
+              Upcoming Events
+            </Tab>
+          </TabList>
+
+          <TabPanel>
+            <div className="flex mt-10">
+              {currentEvents.map((event) => (
+                <div key={event.id} className="mx-auto">
+                  <img className="w-full" src={event.image} alt={event.name} />
+                  <div className="mt-2 flex justify-center text-center">
+                    <div>
+                      <p className="text-xl font-bold tracking-wider mb-6">
+                        {event.name}
+                      </p>
+                      <button onClick={() => handleJoinEvent(event.id)} className="py-1 px-4 text-sm bg-primary rounded-sm tracking-wider text-secondary font-extrabold hover:bg-primary hover:text-white hover:border-0 border-gray-500 transition duration-500 ease-in-out transform ">
+                        Join Event
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabPanel>
+
+          <TabPanel>
+            <div className="flex mt-10">
+              {upcomingEvents.map((event) => (
+                <div key={event.id} className="mx-auto">
+                  <img className="w-full" src={event.image} alt={event.name} />
+                  <div className="mt-2 flex justify-center text-center">
+                    <div>
+                      <p className="text-xl font-bold tracking-wider mb-6">
+                        {event.name}
+                      </p>
+                      <button onClick={() => handleJoinEvent(event.id)} className="py-1 px-4 text-sm bg-primary rounded-sm tracking-wider text-secondary font-extrabold hover:bg-primary hover:text-white hover:border-0 border-gray-500 transition duration-500 ease-in-out transform ">
+                        Join Event
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabPanel>
+        </Tabs>
+      </section>
+    </div>
+  );
+};
+
+export default Events;
+
+
+

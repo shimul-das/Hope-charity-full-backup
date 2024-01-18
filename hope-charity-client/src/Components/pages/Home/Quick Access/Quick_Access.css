@@ -1,0 +1,32 @@
+.quick-container {  display: grid;
+    grid-template-columns: 0.6fr 1.7fr 0.9fr 0.8fr 1fr 1fr 1fr 1.4fr 0.6fr;
+    gap: 10px 10px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      ". . . . . . . . ."
+      ". A C E E E G G ."
+      ". A D F F H H H ."
+      ". B D F F H H H ."
+      ". . . . . . . . ."
+      ". . . . . . . . ."
+      ". . . . . . . . ."
+      ". . . . . . . . ."
+      ". . . . . . . . .";
+  }
+  
+  .A { grid-area: A; }
+  
+  .B { grid-area: B; }
+  
+  .C { grid-area: C; }
+  
+  .D { grid-area: D; }
+  
+  .E { grid-area: E; }
+  
+  .F { grid-area: F; }
+  
+  .G { grid-area: G; }
+  
+  .H { grid-area: H; }
+  
